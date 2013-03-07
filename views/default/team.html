@@ -1,0 +1,108 @@
+{{extend 'layout.html'}}
+<div style="float:left; width:50%;">
+<h3>{{=team.name}}</h3>
+
+
+{{if (auth.is_logged_in()):}}
+	{{if ((auth.user.id == team.team_leader_1) or  (auth.user.id == team.team_leader_2) or (auth.user.id == team.team_leader_3)):}}
+		[{{=A('delete this team', _href=URL('delete_team', args=team.id))}}]<br />
+		[{{=A('search for players', _href=URL('search_for_players', args=team.id))}}]<br />
+	{{pass}}
+	{{for player in team_players:}}
+    	{{if player.player.id == auth.user.id and player.player.id != team.team_leader_1:}}
+    		[{{=A('Leave team', _href=URL('drop_player', args=player.id))}}]
+    	{{pass}}
+	{{pass}}
+{{pass}}
+<br/>
+{{if team.image!="":}}
+    <img width="200px" height="200px" style="float:left;margin-right:20px;" src="{{=URL('download', args=team.image)}}" /><br /><br />
+{{pass}}
+
+<b>Original Team Leader:</b><br />
+	{{=team.team_leader_1.first_name}} {{=team.team_leader_1.last_name}}
+	<br /><br />
+
+<b>Other Team Leaders:</b><br />
+	{{if team.team_leader_2 != None:}}
+	{{=team.team_leader_2.first_name}} {{=team.team_leader_2.last_name}} {{=A('Delete', _href=URL('delete_leader', args=[team.id, 'aWaX22xzzA2']))}}<br />
+	{{pass}}
+	{{if team.team_leader_3 != None:}}
+	{{=team.team_leader_3.first_name}} {{=team.team_leader_3.last_name}} {{=A('Delete', _href=URL('delete_leader', args=[team.id, 'aWaX33xzzA3']))}}<br />
+	{{pass}}
+	{{if team.team_leader_1 == auth.user_id and (team.team_leader_2 == None or team.team_leader_3 == None):}}
+		{{=A('Add Team Leaders', _href=URL('add_leader', args=[team.id]))}}<br />
+	{{pass}}
+
+	<br />
+
+<b>Sport:</b><br />
+    {{=team.sport}}<br /><br />
+
+<b>Championships:</b><br />
+    {{=team.championship}}<br /><br />
+    
+    {{if (auth.is_logged_in()) and (flag == False):}}
+    	{{=form}}
+	{{pass}}
+</div>
+<div style="float:right; width:50%;">
+    <h3> Team Players </h3>
+    <ol>
+    {{for player in team_players:}}
+        <li>{{=player.player.first_name}} {{=player.player.last_name}}
+            
+            {{if team.team_leader_3 != None:}}
+            	{{if auth.user.id == team.team_leader_3.id and player.player.id != auth.user.id:}}
+            		{{if player.player.id != team.team_leader_1.id:}}
+            			{{if team.team_leader_2 != None:}}
+				            {{if player.player.id != team.team_leader_2.id:}}
+				            	[{{=A('drop player', _href=URL('drop_player', args=player.id))}}]</li>
+            				{{pass}}
+        				{{else:}}
+							[{{=A('drop player', _href=URL('drop_player', args=player.id))}}]</li>
+    					{{pass}}
+        			{{pass}}
+        		{{pass}}
+        	{{pass}}
+        	
+            {{if team.team_leader_2 != None:}}
+    			{{if auth.user.id == team.team_leader_2.id and player.player.id != auth.user.id:}}
+            		{{if player.player.id != team.team_leader_1.id:}}
+            			{{if team.team_leader_3 != None:}}
+				            {{if player.player.id != team.team_leader_3.id:}}
+				            	[{{=A('drop player', _href=URL('drop_player', args=player.id))}}]</li>
+            				{{pass}}
+        				{{else:}}
+							[{{=A('drop player', _href=URL('drop_player', args=player.id))}}]</li>
+    					{{pass}}
+        			{{pass}}
+        		{{pass}}
+        	{{pass}}
+        	
+			{{if auth.user.id == team.team_leader_1.id and player.player.id != auth.user.id:}}
+        		[{{=A('drop player', _href=URL('drop_player', args=player.id))}}]</li>
+    		{{pass}}
+    		
+    {{pass}}
+    </ol>
+    
+    {{if invites:}}
+    <b>Pending Requests</b><br />
+    <br />    
+    	{{for invite in invites:}}
+    		{{if invite.pending:}}
+    			{{if invite.sender.image:}}
+   					{{=A(IMG(_src=URL('download', args=invite.sender.image), _width='80px', _height='80px'),
+   						 _href=URL('profile', args=[invite.sender.id]))}}   				
+				{{else:}}
+   					{{=A(IMG(_src=URL('static','images/' + invite.sender.sex.lower() + '_thumb.png'), _width='80px', _height='80px'),
+   						 _href=URL('profile', args=[invite.sender.id]))}} 
+				{{pass}}
+				{{=B(invite.sender.first_name)}} {{=B(invite.sender.last_name)}} is asking to join your team<br /><br />		
+				{{=A('Accept', _href=URL('accept', args=['pat', 'team', invite.id]))}}
+    			{{=A('Decline', _href=URL('decline', args=['pat', 'team', invite.id]))}}<br /><br />
+    		{{pass}}
+    	{{pass}}
+    {{pass}}
+</div>

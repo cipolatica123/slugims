@@ -1,0 +1,35 @@
+{{extend 'layout.html'}}
+
+{{b = 0}}
+{{if teams:}}
+	{{for team in teams:}}
+		{{if team.id not in a:}}
+			{{b = 1}}
+		{{pass}}
+	{{pass}}
+{{pass}}
+
+<h3>Team Results</h3>
+
+{{if b!= 0:}}
+	{{if teams:}}
+		<ol>
+		{{for team in teams:}}
+			{{if team.id not in a:}}				
+			<div id="my_teams">
+			{{if team.image!="":}}
+            	<a href="team/{{=team.id}}"><img src="{{=URL('download', args=team.image)}}" /></a>
+            	{{=H3(A(team.name, _href=URL('team', args=team.id)))}}
+            {{else:}}
+            	{{=IMG(_src=URL('static','images/' + team.sport.replace(' ','') + '.png'))}}
+				{{=H3(A(team.name, _href=URL('team', args=team.id)))}}
+            {{pass}}
+			</div>			
+			{{pass}}
+		{{pass}}
+		</ol>
+	{{pass}}
+{{else:}}
+	<h3>No one has created a team for this sport yet!</h3>
+	{{=A('Would you like to create your own team?', _href=URL('team_signup'))}}
+{{pass}}

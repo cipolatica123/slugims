@@ -1,0 +1,22 @@
+{{left_sidebar_enabled,right_sidebar_enabled=False,('message' in globals())}}
+{{extend 'layout.html'}}  
+
+<ul>
+  <li>{{=A(T("Basketball"),  _href=URL('slugIMs','default','basketball'))}}</li>
+  <li>{{=A(T("Dodgeball"),  _href=URL('slugIMs','default','dodgeball'))}}</li>
+  <li>{{=A(T("Flag Football"),  _href=URL('slugIMs','default','flag_football'))}}</li>
+  <li>{{=A(T("Indoor Soccer"),  _href=URL('slugIMs','default','indoor_soccer'))}}</li>
+  <li>{{=A(T("Soccer"),  _href=URL('slugIMs','default','soccer'))}}</li>
+  <li>{{=A(T("Softball"),  _href=URL('slugIMs','default','softball'))}}</li>
+  <li>{{=A(T("Volleyball"),  _href=URL('slugIMs','default','volleyball'))}}</li>
+  <li>{{=A(T("Ultimate Frisbee"),  _href=URL('slugIMs','default','ultimate_frisbee'))}}</li>
+  <li>{{=A(T("Water Polo"),  _href=URL('slugIMs','default','water_polo'))}}</li>
+ <!-- <li><a href="http://web2py.com">web2py.com</a></li>
+  <li><a href="http://web2py.com/book">{{=T('Documentation')}}</a></li>
+  -->
+</ul>
+{{block right_sidebar}}
+{{=A(T("Administrative Interface"), _href=URL('admin','default','index'), _class='btn',
+     _style='margin-top: 1em;')}}
+
+{{end}}

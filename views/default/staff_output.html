@@ -1,0 +1,9 @@
+{{extend 'layout.html'}}
+<style>
+    p{margin:0; padding:0;}
+    strong {margin: 0 20px 0 0; padding:0; width: 100px; float:left;text-align:right; }
+</style>
+
+<p><strong>First Name:</strong> {{=session.first_name}}</p>
+<p><strong>Last Name:</strong> {{=session.last_name}}</p>
+<p><strong>Email:</strong> {{=session.email}}</p>

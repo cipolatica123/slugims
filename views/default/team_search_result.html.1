@@ -1,0 +1,8 @@
+{{extend 'layout.html'}}
+<h1>{{=sport}}</h1>
+<h4>Available Teams</h4>
+
+{{for team in teams:}}
+	{{=team.name}}<br/>
+<img width="100px" src="{{=URL('download', args=team.image)}}" ><br/><br/><br/>
+{{pass}}

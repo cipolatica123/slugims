@@ -1,0 +1,26 @@
+{{extend 'layout.html'}}
+<h3>{{=sport}} Players</h3>
+{{if player_ids:}}			
+			{{for id in player_ids:}}				
+				
+				{{if db(db.auth_user.id == id).select().first():}}
+                <div id="players_results">
+                	{{guy = db(db.auth_user.id == id).select().first()}}
+                    {{if guy.image:}}
+                    	<a href="profile/{{=guy.id}}/{{=team_id}}"><img src="{{=URL('download', args=guy.image)}}" /></a>
+            			{{=H3(A(guy.first_name.capitalize() + ' ' +guy.last_name.capitalize(), _href=URL('profile', args=[guy.id, team_id])))}}
+            			{{=guy.year}}&nbsp; &nbsp;
+            			{{=A('Invite Player', _href=URL('invite_player', args=[guy.id, team_id]))}}
+            		{{else:}}
+            			{{=IMG(_src=URL('static','images/' + guy.sex.lower() + '_thumb.png'))}}
+						{{=H3(A(guy.first_name.capitalize() + ' ' +guy.last_name.capitalize(), _href=URL('profile', args=[guy.id, team_id])))}}
+            			{{=guy.year}}&nbsp; &nbsp;
+            			{{=A('Invite Player', _href=URL('invite_player', args=[guy.id, team_id]))}}
+            		{{pass}}						                  
+				</div>
+				{{pass}}
+            {{pass}}						
+				
+{{else:}}
+<h4>There are no Free Agent players available at the moment!</h4>
+{{pass}}

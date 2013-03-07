@@ -1,0 +1,104 @@
+{{left_sidebar_enabled,right_sidebar_enabled=False,('message' in globals())}}
+{{extend 'layout.html'}} 
+
+<div id="right_sidebar_position">
+	<h3>Other Sport Schedules</h3>
+	<script>
+    function write(title, data){
+    	$('#right_sidebar_position').append("<b>" + title + "</b><br /><br />")
+                    				.append(data[0] + " vs ")
+                    				.append(data[1] + "<br />")
+                    				.append(data[2] + " at ")
+            						.append(data[3] + "<br /><br />");
+    }
+	$.get('get_schedules.json',
+        function (data) {   
+			if (data.basketball != null){
+                write("Basketball", data.basketball);
+                    								 
+            }
+            if (data.dodgeball != null){
+                write("Dodgeball", data.dodgeball);
+                    								 
+            }
+            if (data.flag_football != null){
+                write("Flag Football", data.flag_football);
+                    								 
+            }
+			if (data.indoor_soccer != null){
+                write("Indoor Soccer", data.indoor_soccer);
+                    								 
+            }
+            if (data.soccer != null){
+                write("Soccer", data.soccer);
+                    								 
+            }
+			if (data.softball != null){
+                write("Softball", data.softball);
+                    								 
+            }
+            if (data.ultimate_frisbee != null){
+                write("Ultimate Frisbee", data.ultimate_frisbee);
+                    								 
+            }
+			if (data.volleyball != null){
+                write("Volleyball", data.volleyball);
+                    								 
+            }
+            /*can you please add the rest and fix the other views*/
+        });
+	</script>
+	
+</div>
+
+<div id="adjusting_position_from_sidebar">
+<h1>{{=message}}</h1>
+
+{{ 
+   if (staff):
+		=A(T("Add Game"),  _href=URL('water_polo_addgame'))
+   		BR()
+   pass
+}}
+
+<div id="sched_wrapper">
+	<table class="sportsched">
+		<tbody>
+			<tr class="spcolumns"  >
+				<th width="16%">Date</th>				
+				<th width="20%">Team 1</th>
+				<th width="20%">Team 2</th>
+				<th width="13%">Time</th>
+				<th width="20%">Winner</th>
+				<th width="15%">Score</th>
+			</tr>
+			{{ counter = 0}}
+			{{for schedule in schedules:}}
+		     {{ if (counter %2 == 0):}}
+			<tr>
+			{{else:}}
+			<tr class="changeStyle">
+			{{pass}}
+			{{counter = counter + 1}}
+				<td> {{=schedule.date.strftime("%a, %b %d")}}</td>
+				<td> {{=schedule.team_1.name}} </td>
+				<td> {{=schedule.team_2.name}}  </td>
+                <td> {{=schedule.date.strftime("%I:%M %p")}} </td>
+                <td> {{if schedule.winner:
+							=schedule.winner.name
+                       else: ''
+                       }} </td>
+				<td> {{=schedule.score or ''}} </td>
+			</tr>
+			{{if staff:}}
+            <td width="30%">[{{=A('update or delete this game', _href=URL('water_polo_edit', args=schedule.id))}}]</td>
+    		 <br />
+    		{{pass}}
+			{{pass}}
+		</tbody>
+	</table>
+</div>
+
+
+</div>   
+{{block right_sidebar}}

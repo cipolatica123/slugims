@@ -1,0 +1,263 @@
+timestamp: 2012-12-12T11:36:50.870000
+CREATE TABLE auth_user(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    first_name CHAR(128),
+    last_name CHAR(128),
+    email CHAR(512),
+    password CHAR(512),
+    registration_key CHAR(512),
+    reset_password_key CHAR(512),
+    registration_id CHAR(512),
+    year CHAR(512),
+    sex CHAR(512),
+    sport CHAR(512),
+    staff CHAR(1)
+);
+success!
+timestamp: 2012-12-12T11:36:50.885000
+CREATE TABLE auth_group(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    role CHAR(512),
+    description TEXT
+);
+success!
+timestamp: 2012-12-12T11:36:50.901000
+CREATE TABLE auth_membership(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER REFERENCES auth_user (id) ON DELETE CASCADE,
+    group_id INTEGER REFERENCES auth_group (id) ON DELETE CASCADE
+);
+success!
+timestamp: 2012-12-12T11:36:50.916000
+CREATE TABLE auth_permission(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    group_id INTEGER REFERENCES auth_group (id) ON DELETE CASCADE,
+    name CHAR(512),
+    table_name CHAR(512),
+    record_id INTEGER
+);
+success!
+timestamp: 2012-12-12T11:36:50.916000
+CREATE TABLE auth_event(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    time_stamp TIMESTAMP,
+    client_ip CHAR(512),
+    user_id INTEGER REFERENCES auth_user (id) ON DELETE CASCADE,
+    origin CHAR(512),
+    description TEXT
+);
+success!
+timestamp: 2012-12-12T11:36:50.932000
+CREATE TABLE auth_cas(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER REFERENCES auth_user (id) ON DELETE CASCADE,
+    created_on TIMESTAMP,
+    service CHAR(512),
+    ticket CHAR(512),
+    renew CHAR(1)
+);
+success!
+timestamp: 2012-12-12T11:36:50.932000
+CREATE TABLE team_inviting_players(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sender INTEGER REFERENCES teams (id) ON DELETE CASCADE,
+    receiver INTEGER REFERENCES auth_user (id) ON DELETE CASCADE,
+    date_sent TIMESTAMP,
+    pending CHAR(1)
+);
+success!
+timestamp: 2012-12-12T11:36:50.948000
+CREATE TABLE player_asking_teams(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sender INTEGER REFERENCES auth_user (id) ON DELETE CASCADE,
+    receiver INTEGER REFERENCES teams (id) ON DELETE CASCADE,
+    date_sent TIMESTAMP,
+    pending CHAR(1)
+);
+success!
+timestamp: 2012-12-12T11:36:50.948000
+CREATE TABLE team_leader_invites(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sender INTEGER REFERENCES auth_user (id) ON DELETE CASCADE,
+    receiver INTEGER REFERENCES auth_user (id) ON DELETE CASCADE,
+    team INTEGER REFERENCES teams (id) ON DELETE CASCADE,
+    date_sent TIMESTAMP,
+    pending CHAR(1)
+);
+success!
+timestamp: 2012-12-12T11:36:50.963000
+CREATE TABLE basketball(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date TIMESTAMP,
+    team_1 INTEGER REFERENCES basketball_sport (id) ON DELETE CASCADE,
+    team_2 INTEGER REFERENCES basketball_sport (id) ON DELETE CASCADE,
+    winner INTEGER REFERENCES basketball_sport (id) ON DELETE CASCADE,
+    score CHAR(512)
+);
+success!
+timestamp: 2012-12-12T11:36:50.979000
+CREATE TABLE dodgeball(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date TIMESTAMP,
+    team_1 INTEGER REFERENCES dodgeball_sport (id) ON DELETE CASCADE,
+    team_2 INTEGER REFERENCES dodgeball_sport (id) ON DELETE CASCADE,
+    winner INTEGER REFERENCES dodgeball_sport (id) ON DELETE CASCADE,
+    score CHAR(512)
+);
+success!
+timestamp: 2012-12-12T11:36:50.994000
+CREATE TABLE flag_football(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date TIMESTAMP,
+    team_1 INTEGER REFERENCES flag_football_sport (id) ON DELETE CASCADE,
+    team_2 INTEGER REFERENCES flag_football_sport (id) ON DELETE CASCADE,
+    winner INTEGER REFERENCES flag_football_sport (id) ON DELETE CASCADE,
+    score CHAR(512)
+);
+success!
+timestamp: 2012-12-12T11:36:51.026000
+CREATE TABLE indoor_soccer(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date TIMESTAMP,
+    team_1 INTEGER REFERENCES indoor_soccer_sport (id) ON DELETE CASCADE,
+    team_2 INTEGER REFERENCES indoor_soccer_sport (id) ON DELETE CASCADE,
+    winner INTEGER REFERENCES indoor_soccer_sport (id) ON DELETE CASCADE,
+    score CHAR(512)
+);
+success!
+timestamp: 2012-12-12T11:36:51.041000
+CREATE TABLE soccer(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date TIMESTAMP,
+    team_1 INTEGER REFERENCES soccer_sport (id) ON DELETE CASCADE,
+    team_2 INTEGER REFERENCES soccer_sport (id) ON DELETE CASCADE,
+    winner INTEGER REFERENCES soccer_sport (id) ON DELETE CASCADE,
+    score CHAR(512)
+);
+success!
+timestamp: 2012-12-12T11:36:51.057000
+CREATE TABLE softball(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date TIMESTAMP,
+    team_1 INTEGER REFERENCES softball_sport (id) ON DELETE CASCADE,
+    team_2 INTEGER REFERENCES softball_sport (id) ON DELETE CASCADE,
+    winner INTEGER REFERENCES softball_sport (id) ON DELETE CASCADE,
+    score CHAR(512)
+);
+success!
+timestamp: 2012-12-12T11:36:51.072000
+CREATE TABLE volleyball(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date TIMESTAMP,
+    team_1 INTEGER REFERENCES volleyball_sport (id) ON DELETE CASCADE,
+    team_2 INTEGER REFERENCES volleyball_sport (id) ON DELETE CASCADE,
+    winner INTEGER REFERENCES volleyball_sport (id) ON DELETE CASCADE,
+    score CHAR(512)
+);
+success!
+timestamp: 2012-12-12T11:36:51.072000
+CREATE TABLE ultimate_frisbee(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date TIMESTAMP,
+    team_1 INTEGER REFERENCES ultimate_frisbee_sport (id) ON DELETE CASCADE,
+    team_2 INTEGER REFERENCES ultimate_frisbee_sport (id) ON DELETE CASCADE,
+    winner INTEGER REFERENCES ultimate_frisbee_sport (id) ON DELETE CASCADE,
+    score CHAR(512)
+);
+success!
+timestamp: 2012-12-12T11:36:51.088000
+CREATE TABLE water_polo(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date TIMESTAMP,
+    team_1 INTEGER REFERENCES water_polo_sport (id) ON DELETE CASCADE,
+    team_2 INTEGER REFERENCES water_polo_sport (id) ON DELETE CASCADE,
+    winner INTEGER REFERENCES water_polo_sport (id) ON DELETE CASCADE,
+    score CHAR(512)
+);
+success!
+timestamp: 2012-12-12T11:36:51.119000
+CREATE TABLE teams(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    image CHAR(512),
+    name CHAR(100),
+    team_leader_1 INTEGER REFERENCES auth_user (id) ON DELETE CASCADE,
+    team_leader_2 INTEGER REFERENCES auth_user (id) ON DELETE CASCADE,
+    team_leader_3 INTEGER REFERENCES auth_user (id) ON DELETE CASCADE,
+    sport CHAR(512),
+    championship CHAR(512),
+    date_created TIMESTAMP,
+    number_of_players INTEGER
+);
+success!
+timestamp: 2012-12-12T11:36:51.135000
+CREATE TABLE team_players(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    team INTEGER REFERENCES teams (id) ON DELETE CASCADE,
+    player INTEGER REFERENCES auth_user (id) ON DELETE CASCADE
+);
+success!
+timestamp: 2012-12-12T11:36:51.150000
+CREATE TABLE basketball_sport(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    team INTEGER REFERENCES teams (id) ON DELETE CASCADE,
+    team_name CHAR(512)
+);
+success!
+timestamp: 2012-12-12T11:36:51.166000
+CREATE TABLE dodgeball_sport(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    team INTEGER REFERENCES teams (id) ON DELETE CASCADE,
+    team_name CHAR(512)
+);
+success!
+timestamp: 2012-12-12T11:36:51.182000
+CREATE TABLE flag_football_sport(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    team INTEGER REFERENCES teams (id) ON DELETE CASCADE,
+    team_name CHAR(512)
+);
+success!
+timestamp: 2012-12-12T11:36:51.182000
+CREATE TABLE indoor_soccer_sport(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    team INTEGER REFERENCES teams (id) ON DELETE CASCADE,
+    team_name CHAR(512)
+);
+success!
+timestamp: 2012-12-12T11:36:51.197000
+CREATE TABLE soccer_sport(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    team INTEGER REFERENCES teams (id) ON DELETE CASCADE,
+    team_name CHAR(512)
+);
+success!
+timestamp: 2012-12-12T11:36:51.228000
+CREATE TABLE softball_sport(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    team INTEGER REFERENCES teams (id) ON DELETE CASCADE,
+    team_name CHAR(512)
+);
+success!
+timestamp: 2012-12-12T11:36:51.244000
+CREATE TABLE volleyball_sport(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    team INTEGER REFERENCES teams (id) ON DELETE CASCADE,
+    team_name CHAR(512)
+);
+success!
+timestamp: 2012-12-12T11:36:51.260000
+CREATE TABLE ultimate_frisbee_sport(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    team INTEGER REFERENCES teams (id) ON DELETE CASCADE,
+    team_name CHAR(512)
+);
+success!
+timestamp: 2012-12-12T11:36:51.291000
+CREATE TABLE water_polo_sport(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    team INTEGER REFERENCES teams (id) ON DELETE CASCADE,
+    team_name CHAR(512)
+);
+success!
+timestamp: 2012-12-13T20:19:08.463000
+ALTER TABLE auth_user ADD image CHAR(512);

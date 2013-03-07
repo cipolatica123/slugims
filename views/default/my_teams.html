@@ -1,0 +1,21 @@
+{{extend 'layout.html'}}
+
+<h3>My Teams</h3>
+
+{{if teams:}}		  
+	{{for team in teams:}}
+		<div id="my_teams">
+			{{if team.team.image!="":}}
+            	<a href="team/{{=team.team.id}}"><img src="{{=URL('download', args=team.team.image)}}" /></a>
+            	{{=H3(A(team.team.name, _href=URL('team', args=team.team.id)))}}
+            {{else:}}
+            	{{=IMG(_src=URL('static','images/' + team.team.sport.replace(' ','') + '.png'))}}
+				{{=H3(A(team.team.name, _href=URL('team', args=team.team.id)))}}
+            {{pass}}
+		</div>	
+	{{pass}}
+	<br />
+	<br />
+{{else:}}
+<h3>You are not managing any teams at the moment!<h3>
+{{pass}}

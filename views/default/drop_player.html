@@ -1,0 +1,11 @@
+{{extend 'layout.html'}}
+
+{{=player.first_name}} {{=player.last_name}}
+<br/>
+{{if player.id == auth.user.id:}}
+Are you sure you want to leave?
+{{pass}}
+
+<br/>
+<br/>
+{{=form}}

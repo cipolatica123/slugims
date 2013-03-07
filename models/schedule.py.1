@@ -1,0 +1,96 @@
+# coding: utf8
+
+from datetime import datetime
+
+db.define_table('teams',
+                Field('image', 'upload'),
+                Field('name', 'string', required=True, length=100),
+                Field('team_leader_1', db.auth_user, default=auth.user_id, readable=False, writable=False),
+                Field('team_leader_2', db.auth_user, readable=False, writable=False, required=False),
+                Field('team_leader_3', db.auth_user, readable=False, writable=False, required=False),
+                Field('sport', requires=IS_IN_SET(['Basketball', 'Dodgeball', 'Flag Football',
+                      'Futsal', 'Outdoor Soccer', 'Softball', 'Volleyball', 'Ultimate Frisbee', 'Innertube Water Polo'])),
+                Field('championship', readable=False, writable=False),
+                Field('date_created', 'datetime', default=datetime.utcnow()), 
+                format='%(name)s'
+                )
+
+db.teams.team_leader_1.requires = IS_IN_DB(db, db.auth_user, '%(first_name)s')
+db.teams.date_created.writable = db.teams.date_created.readable = False
+db.teams.name.requires = IS_NOT_IN_DB(db, 'teams.name')
+
+db.define_table('basketball',
+                Field('date', 'datetime', widget=SQLFORM.widgets.datetime.widget, required=True),                
+                Field('team_1', 'reference teams', required=True),
+                Field('team_2', 'reference teams', required=True),
+                Field('winner', 'reference teams', required=False),
+                Field('score', required=False),
+                )
+
+db.basketball.team_1.sport.requires = 'basketball'
+
+db.define_table('dodgeball',
+                Field('date', 'datetime', widget=SQLFORM.widgets.datetime.widget),                
+                Field('team_1', 'reference teams', required=True),
+                Field('team_2', 'reference teams', required=True),
+                Field('winner', 'reference teams', required=False),
+                Field('score', required=False),
+                )
+                
+db.define_table('flag_football',
+                Field('date', 'datetime', widget=SQLFORM.widgets.datetime.widget),                
+                Field('team_1', 'reference teams', required=True),
+                Field('team_2', 'reference teams', required=True),
+                Field('winner', 'reference teams', required=False),
+                Field('score', required=False),
+                )
+                
+db.define_table('indoor_soccer',
+                Field('date', 'datetime', widget=SQLFORM.widgets.datetime.widget),                
+                Field('team_1', 'reference teams', required=True),
+                Field('team_2', 'reference teams', required=True),
+                Field('winner', 'reference teams', required=False),
+                Field('score', required=False),
+                )
+                
+db.define_table('soccer',
+                Field('date', 'datetime', widget=SQLFORM.widgets.datetime.widget),                
+                Field('team_1', 'reference teams', required=True),
+                Field('team_2', 'reference teams', required=True),
+                Field('winner', 'reference teams', required=False),
+                Field('score', required=False),
+                )
+                
+               
+db.define_table('softball',
+                Field('date', 'datetime', widget=SQLFORM.widgets.datetime.widget),                
+                Field('team_1', 'reference teams', required=True),
+                Field('team_2', 'reference teams', required=True),
+                Field('winner', 'reference teams', required=False),
+                Field('score', required=False),
+                )
+                
+               
+db.define_table('volleyball',
+                Field('date', 'datetime', widget=SQLFORM.widgets.datetime.widget),                
+                Field('team_1', 'reference teams', required=True),
+                Field('team_2', 'reference teams', required=True),
+                Field('winner', 'reference teams', required=False),
+                Field('score', required=False),
+                )
+                
+               
+db.define_table('ultimate_frisbee',
+                Field('date', 'datetime', widget=SQLFORM.widgets.datetime.widget),                
+                Field('team_1', 'reference teams', required=True),
+                Field('team_2', 'reference teams', required=True),
+                Field('winner', 'reference teams', required=False),
+                Field('score', required=False),
+                )
+db.define_table('water_polo',
+                Field('date', 'datetime', widget=SQLFORM.widgets.datetime.widget),                
+                Field('team_1', 'reference teams', required=True),
+                Field('team_2', 'reference teams', required=False),
+                Field('winner', 'reference teams', required=True),
+                Field('score', required=False),
+                )

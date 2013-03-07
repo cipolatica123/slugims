@@ -1,0 +1,103 @@
+{{left_sidebar_enabled,right_sidebar_enabled=False,('message' in globals())}}
+{{extend 'layout_for_index.html'}}  
+
+
+{{def print_schedule(sport_reference):}}
+	{{if sport_reference:}}
+		{{i = 0}}
+		{{for schedule in sport_reference:}}
+			{{i = i +1}}
+			<b>{{=schedule.team_1.name}} vs. {{=schedule.team_2.name}}</b><br />
+			{{=schedule.date.strftime("%a, %b %d")}} at {{=schedule.date.strftime("%I:%M %p")}}<br /><br />			
+			{{if i > 1:}}
+				{{break}}
+			
+		{{pass}}
+	{{else:}}
+		<h3>Sorry!</h3>
+		<p>No games in schedule</p>
+	{{pass}}
+{{pass}} 
+
+{{block right_sidebar}}
+
+
+<!-- SLIDESHOW  -->
+<div id="slideshow_wrapper">
+	<div id="slideWrap">
+	{{# =IMG(_src=URL('static','images/mascot.jpg'), _alt='image1', _class='is-showing') }}
+	{{ =IMG(_src=URL('static','images/dodgeball.jpg'), _alt='image2', _class='is-showing') }}
+	{{ =IMG(_src=URL('static','images/mascot.jpg'), _alt='image3') }}
+	{{ =IMG(_src=URL('static','images/flag_football.jpg'), _alt='image4') }}
+	{{# =IMG(_src=URL('static','images/indoor_soccer.jpg'), _alt='image5') }}
+	{{ =IMG(_src=URL('static','images/soccer.jpg'), _alt='image6') }}
+	{{ =IMG(_src=URL('static','images/softball.jpg'), _alt='image7') }}
+	{{ =IMG(_src=URL('static','images/ultimate_frisbee.jpg'), _alt='image8') }}
+	{{ =IMG(_src=URL('static','images/volleyball.jpeg'), _alt='image9') }}
+	{{ =IMG(_src=URL('static','images/water_polo.jpg'), _alt='image9') }}
+	</div>
+	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			slideShow();
+		});
+	
+		function slideShow() {
+			var showing = $('#slideWrap .is-showing');
+			var next = showing.next().length ? showing.next() : showing.parent().children(':first');
+			showing.fadeOut(300, function() { next.fadeIn(200).addClass('is-showing'); }).removeClass('is-showing');
+			setTimeout(slideShow, 4500);
+		}
+		
+	</script> 
+</div>	
+	<!-- End SLIDESHOW  -->
+
+<br />
+<div class="sched_table_for_index">
+	<div class="sched_column_block">
+		<p>Basketball</p>
+		<div class="sched_each_tile">
+			{{print_schedule(basketball_schedules) }}
+		</div>
+		<p>Indoor Soccer</p>
+		<div class="sched_each_tile">
+			{{print_schedule(indoor_soccer_schedules) }}
+		</div>
+		<p>Volleyball</p>
+		<div class="sched_each_tile">
+			{{print_schedule(volleyball_schedules) }}
+		</div>
+	</div>
+	
+	<div class="sched_column_block">
+		<p>Dodgeball</p>
+		<div class="sched_each_tile">
+			{{print_schedule(dodgeball_schedules) }}
+		</div>
+		<p>Soccer</p>
+		<div class="sched_each_tile">
+			{{print_schedule(soccer_schedules) }}
+		</div>
+		<p>Ultimate Frisbee</p>
+		<div class="sched_each_tile">
+			{{print_schedule(ultimate_frisbee_schedules) }}
+		</div>
+	</div>
+	
+	<div class="sched_column_block">
+		<p>Flag Football</p>
+		<div class="sched_each_tile">
+			{{print_schedule(flag_football_schedules) }}
+		</div>
+		<p>Softball</p>
+		<div class="sched_each_tile">
+			{{print_schedule(softball_schedules) }}
+		</div>
+		<p>Water Polo</p>
+		<div class="sched_each_tile">
+			{{print_schedule(water_polo_schedules) }}
+		</div>
+	</div>
+</div>
+{{#end}}

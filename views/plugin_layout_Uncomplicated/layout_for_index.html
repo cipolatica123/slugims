@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+
+Design by Free CSS Templates
+http://www.freecsstemplates.org
+Released for free under a Creative Commons Attribution 2.5 License
+
+Title      : Uncomplicated 
+Version    : 1.0
+Released   : 20080920
+Description: A two-column web design, best for your personal and business blogging.
+
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+  <title>
+   {{=response.title or request.application}}
+  </title>
+  {{response.files.append(URL(request.application,'static','plugin_layouts/Uncomplicated/default.css'))}}
+  {{response.files.append(URL('static','plugin_layouts/superfish.js'))}}
+  {{include 'web2py_ajax.html'}}
+  <style>
+ul.web2py-menu-vertical { width: 150px; position: relative; top:1em; left:1em;  z-index:30; border:0; margin:0; padding: 0; list-style: none; text-decoration: none;}
+ul.web2py-menu-vertical li { margin:0; padding:0; border:0; width: 150px; background: black; text-align:left;}
+ul.web2py-menu-vertical li a { margin:0; padding: 1px 3px 1px 3px; border:0; width: 144px; color: white; font-size:12px;}
+div.flash { position: fixed; float: right; padding: 10px; top: 10px; right: 30px; opacity: 0.75; margin: 10px 10px 10px 10px; text-align: center; clear: both; color: #F1B521; font-size: 11pt; text-align: center; vertical-align: middle; cursor: pointer; background: black; border: 2px solid #fff; -moz-border-radius: 5px; -webkit-border-radius: 5px; z-index: 2; }
+div.error { background-color: green; color: white; padding: 3px; }
+      /*.auth_navbar { text-align:right; z-index:20; position: absolute; top: 2px; right:250px; border:0; padding:0 }*/
+  </style>
+  
+  <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/themes/base/jquery-ui.css" type="text/css" media="all" />
+  <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/jquery-ui.min.js" type="text/javascript"></script>
+  
+ </head>
+ <body>
+  <!-- start header -->
+  <div id="header">
+   <div id="logo">
+    <h1>
+     {{=response.title or request.application}}
+    </h1>    
+   </div>
+   {{#try:}}{{#=auth.navbar(action=URL('default','user'))}}{{#except:pass}}
+   {{try:}}{{=response.user_bar}}{{except:pass}}
+   <div id="menu">
+    {{=MENU(response.menu,_class='web2py-menu')}}
+    <script>
+      jQuery(document).ready(function(){jQuery('ul.web2py-menu').superfish({delay:400});});
+    </script>
+   </div>
+  </div>
+  <!-- end header -->
+  <!-- start page -->
+  <div id="wrapper">
+   <div id="page">
+    <!-- start content -->
+    <div id="content-index">
+     <div class="flash">{{=response.flash or ''}}</div>
+     {{include}}
+    </div>
+    <!-- end content -->
+    <!-- start sidebar -->
+
+    <!-- end sidebar -->
+    <br style="clear: both;" />
+   </div>
+  </div>
+  <!-- end page -->
+  <!-- start footer -->
+  <div id="footer">
+   <p id="legal">
+     &copy; 2010. All Rights Reserved. Please report issues with the website to the <a href="mailto:bkeyouma@ucsc.edu">SlugIMs</a>
+   </p>
+   <!-- end footer -->
+  </div>
+ </body>
+</html>

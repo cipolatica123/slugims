@@ -1,0 +1,671 @@
+# -*- coding: utf-8 -*-
+#########################################################################
+## - user is required for authentication and authorization
+## - download is for downloading files uploaded in the db (does streaming)
+## - call exposes all registered services (none by default)
+#########################################################################
+
+def index():
+    return dict()
+
+#######################        Player Profiles    ############################
+
+@auth.requires_login()
+def profile():
+    player = db(db.auth_user.id == auth.user_id).select().first()
+    leader_invites = db((db.team_leader_invites.receiver == player.id)).select()
+    team_invites = db(db.team_inviting_players.receiver == player.id).select()
+    return dict(player=player, leader_invites=leader_invites, team_invites=team_invites)
+    
+#######################   Functions related to invites  ######################
+
+@auth.requires_login()
+def accept():
+    table_abbr = request.args[0] or redirect('index')    
+    destination = request.args[1] or redirect('index')
+    
+    # update the invites table then do the neccessary action to submit the accept
+    if table_abbr == 'tli':
+        invite = db.team_leader_invites(request.args[2]) or redirect('index')        
+        invite.update_record(pending = False)
+        if invite.team.team_leader_2 == None:
+            invite.team.update_record(team_leader_2 = auth.user_id)
+            db.commit()
+            session.flash = 'You have been assigned the team leader'
+            redirect(URL(destination))
+        elif invite.team.team_leader_3 == None:
+            invite.team.update_record(team_leader_3 = auth.user_id)
+            db.commit()
+            session.flash = 'You have been assigned the team leader'
+            redirect(URL(destination))
+        else:
+            session.falsh = 'The team already has three leaders. Please contact your Originial team leader'
+            redirect(URL(destination))
+  
+    elif table_abbr == 'pat':
+        invite = db.player_asking_teams(request.args[2]) or redirect('index')
+        redirect(URL(destination))
+        
+    elif table_abbr == 'tip':
+        invite = db.team_inviting_players(request.args[2]) or redirect('index')
+        invite.update_record(pending = False)
+        db.team_players.insert(team = invite.sender.id, player = auth.user_id)
+        invite.sender.update_record(number_of_players = invite.sender.number_of_players + 1)
+        db.commit()
+        session.flash = 'You are now a member of the ' + invite.sender.name
+        redirect(URL(destination))
+        
+    else:
+        session.flash = 'wrong arguments passed, try again'
+        redirect(URL(destination))
+
+@auth.requires_login()
+def decline():
+    table_abbr = request.args[0] or redirect('index')    
+    destination = request.args[1] or redirect('index')
+    
+    # update the invites table then do the neccessary action to submit the decline
+    if table_abbr == 'tli':
+        db(db.team_leader_invites.id == request.args(2)).delete()
+        db.commit()
+        redirect(URL(destination))
+  
+    elif table_abbr == 'pat':
+        db(db.player_asking_teams.id == request.args[2]).delete()
+        db.commit()
+        redirect(URL(destination))
+        
+    elif table_abbr == 'tip':
+        invite = db(db.team_inviting_players.id == request.args[2]).delete()
+        db.commit()
+        redirect(URL(destination))
+        
+    else:
+        session.flash = 'wrong arguments passed, try again'
+        redirect(URL(destination))
+
+#######################   Teams related functions ############################
+
+@auth.requires_login()
+def team_signup():
+    form = SQLFORM(db.teams)
+    if form.process().accepted:
+        team = db(db.teams.name == form.vars.name).select().first()
+        team.update_record(number_of_players = 1)
+        db.team_players.insert(team = team, player = auth.user_id)
+        db.commit()
+        if form.vars.sport == 'Basketball':
+            db.basketball_sport.insert(team = team, team_name = team.name)
+        elif form.vars.sport == 'Dodgeball':
+            db.dodgeball_sport.insert(team = team, team_name = team.name)
+        elif form.vars.sport == 'Flag Football':
+            db.flag_football_sport.insert(team = team, team_name = team.name)
+        elif form.vars.sport == 'Indoor Soccer':
+            db.indoor_soccer_sport.insert(team = team, team_name = team.name)
+        elif form.vars.sport == 'Soccer':
+            db.soccer_sport.insert(team = team, team_name = team.name)
+        elif form.vars.sport == 'Softball':
+            db.softball_sport.insert(team = team, team_name = team.name)
+        elif form.vars.sport == 'Volleyball':
+            db.volleyball_sport.insert(team = team, team_name = team.name)
+        elif form.vars.sport == 'Ultimate Frisbee':
+            db.ultimate_frisbee_sport.insert(team = team, team_name = team.name)
+        elif form.vars.sport == 'Water Polo':
+            db.water_polo_sport.insert(team = team, team_name = team.name)
+        redirect(URL('my_teams'))
+    elif form.errors:
+        response.flash = 'Fix the errors please'
+    return dict(form=form)
+
+@auth.requires_login()
+def my_teams():
+	# grab all the teams that are associated with the user
+    """teams = db((db.teams.team_leader_1 == auth.user_id) |
+	(db.teams.team_leader_2 == auth.user_id) |
+	(db.teams.team_leader_3 == auth.user_id)).select(orderby=~db.teams.date_created)"""
+    #if not teams:
+        #teams = db(db.team_players.player == auth.user_id).select(db.team_players.team)
+    teams = db(db.team_players.player == auth.user_id).select()
+<<<<<<< HEAD
+=======
+    invites = db((db.player_asking_teams.receiver.team_leader_1 == auth.user_id) |
+                 (db.player_asking_teams.receiver.team_leader_2 == auth.user_id) |
+                 (db.player_asking_teams.receiver.team_leader_1 == auth.user_id)).select(orderby=~db.player_asking_teams.date_created)
+>>>>>>> my teams and team view fixed
+    return dict(teams=teams)
+	
+@auth.requires_login()
+def add_leader():
+    team = db.teams(request.args[0]) or redirect('index')
+
+    # Creating the forms based on how many team leaders are already there    
+    if team.team_leader_2==None and team.team_leader_3==None:
+        form = SQLFORM.factory(Field('leader_2', requires=[IS_EMPTY_OR(IS_IN_DB(db, db.auth_user.email))]),
+                               Field('leader_3', requires=[IS_EMPTY_OR(IS_IN_DB(db, db.auth_user.email))]))        
+    elif team.team_leader_2==None:
+        form = SQLFORM.factory(Field('leader_2', requires=[IS_EMPTY_OR(IS_IN_DB(db, db.auth_user.email))]))        
+    else:
+        form = SQLFORM.factory(Field('leader_3', requires=[IS_EMPTY_OR(IS_IN_DB(db, db.auth_user.email))]))
+        
+    # If form processed then add the invitation to the invites table        
+    if form.process().accepted:
+        message = 'Your invite was sent to '
+        flag_for_leader_2 = False
+        flag_for_leader_3 = False
+        
+        # Fetch all the invites that this team leader has already sent
+        # to check for any duplicate invites
+        sent_invites = db(db.team_leader_invites.sender == auth.user_id).select()
+        
+        if form.vars.leader_2 != None:
+            leader2 = db(db.auth_user.email == form.vars.leader_2).select().first()
+            # check for any duplicate invite
+            for invite in sent_invites:
+                if invite.receiver.id == leader2.id and invite.team.id == team.id:
+                    flag_for_leader_2 = True
+                    message = 'You have already sent a request to ' + form.vars.leader_2 + '. Please wait for their response.'
+                    break
+            if flag_for_leader_2 == False:
+                db.team_leader_invites.insert(sender=auth.user_id, receiver=leader2.id, team=team.id)
+                db.commit()
+            #team.update_record(team_leader_2 = leader2.id)            
+        if form.vars.leader_3 != None:
+            leader3 = db(db.auth_user.email == form.vars.leader_3).select().first()
+            # check for any duplicate invite
+            for invite in sent_invites:
+                if invite.receiver.id == leader3.id and invite.team.id == team.id:
+                    flag_for_leader_3 = True
+                    message = 'You have already sent a request to ' + form.vars.leader_3 + '. Please wait for their response.'
+                    break
+            if flag_for_leader_3 == False:
+                db.team_leader_invites.insert(sender=auth.user_id, receiver=leader3.id, team=team.id)
+                db.commit()
+        session.flash = message
+        redirect(URL(my_teams))       
+    elif form.errors:
+        response.flash = 'form has errors'            
+    
+    if team.team_leader_1 == auth.user_id:        
+        return dict(team=team, form=form)
+    else:
+        response.flash = 'You do not have the right permissions'
+        redirect(URL('my_teams'))
+    
+@auth.requires_login()    
+def delete_leader():
+    team = db.teams(request.args[0]) or redirect('index')
+    leader = request.args[1] or redirect('index')
+    
+    if team.team_leader_1.id == auth.user_id:
+        if leader == 'aWaX22xzzA2':
+            team.update_record(team_leader_2 = None)
+            redirect(URL('my_teams'))
+        elif leader == 'aWaX33xzzA3':
+            team.update_record(team_leader_3 = None)
+            redirect(URL('my_teams'))
+        else:
+            response.flash = 'Bad argument passed, try again!'
+            redirect(URL('my_teams'))
+    else:
+        response.flash = 'You do not have the right permissions'
+        redirect(URL('my_teams'))
+    
+        
+###############################   Staff sign up options ################################
+
+def staff_signup():
+    form = SQLFORM.factory(
+        Field('first_name', 'string', length=64, requires=IS_NOT_EMPTY()),
+        Field('last_name', 'string', length=64, requires=IS_NOT_EMPTY()),
+        Field('email', requires = [IS_EMAIL(forced='^.*\ucsc.edu(|\..*)$', error_message='Please enter your @ucsc.edu email.'),
+                                    IS_NOT_IN_DB(db, db.auth_user.email, error_message='Error: email already in database.') ]),
+        Field('password','password', requires=IS_NOT_EMPTY()),
+        Field('password_again', 'password',
+              requires=IS_EQUAL_TO(request.vars.password)),
+        )
+    if form.process().accepted:
+        response.flash = 'form accepted'
+        session.first_name = form.vars.first_name
+        session.last_name = form.vars.last_name
+        session.email = form.vars.email
+        session.password = form.vars.password
+        redirect(URL('staff_output'))
+    elif form.errors:
+        response.flash = 'form has errors'
+    return dict(form=form)
+
+def staff_output(): 
+    db.auth_user.insert(first_name = session.first_name,
+        last_name=session.last_name, email=session.email, password = db.auth_user.password.validate(session.password)[0], staff=True)
+    response.flash = 'new staff complete!'
+    redirect(URL('index'))
+    return dict(session=session)
+
+def user():
+    """
+    exposes:
+    http://..../[app]/default/user/login
+    http://..../[app]/default/user/logout
+    http://..../[app]/default/user/register
+    http://..../[app]/default/user/profile
+    http://..../[app]/default/user/retrieve_password
+    http://..../[app]/default/user/change_password
+    use @auth.requires_login()
+        @auth.requires_membership('group name')
+        @auth.requires_permission('read','table name',record_id)
+    to decorate functions that need access control
+    """
+    return dict(form=auth())
+
+
+def download():
+    return response.download(request,db)
+
+
+def call():
+    """
+    exposes services. for example:
+    http://..../[app]/default/call/jsonrpc
+    decorate with @services.jsonrpc the functions to expose
+    supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
+    """
+    return service()
+
+
+@auth.requires_signature()
+def data():
+    """
+    http://..../[app]/default/data/tables
+    http://..../[app]/default/data/create/[table]
+    http://..../[app]/default/data/read/[table]/[id]
+    http://..../[app]/default/data/update/[table]/[id]
+    http://..../[app]/default/data/delete/[table]/[id]
+    http://..../[app]/default/data/select/[table]
+    http://..../[app]/default/data/search/[table]
+    but URLs must be signed, i.e. linked with
+      A('table',_href=URL('data/tables',user_signature=True))
+    or with the signed load operator
+      LOAD('default','data.load',args='tables',ajax=True,user_signature=True)
+    """
+    return dict(form=crud())
+
+
+#################### Search For Players ####################
+def search_for_players():
+    this_team = db.teams(request.args[0]) or redirect(URL('my_teams'))
+    team_members = db(db.team_players.team == this_team).select()
+<<<<<<< HEAD
+=======
+  #  players = db(db.auth_user.sport == this_team.sport)&(db.auth_user.id != team_members.player.id).select(db.teams.ALL)
+>>>>>>> my teams and team view fixed
+    athletes = db(db.auth_user.sport == this_team.sport).select()
+    sport = this_team.sport
+    return dict(athletes=athletes, team_members=team_members)
+
+#################### Team View Controller ####################
+def team():
+    message = 'request sent'
+    team = db.teams(request.args[0]) or redirect(URL('index'))
+    form=FORM(INPUT(_type='submit', _value='request to join'))
+    if form.process().accepted:
+        db.player_asking_teams.insert(
+            sender = auth.user_id,
+            receiver = team.id
+        )
+        session.flash = message
+        #if (auth.is_logged_in()):
+    return dict(team=team, form=form)
+
+#################### Team Search ####################
+def team_search():
+    form=FORM(LABEL('Please Select a Sport'), BR(),
+        SELECT(['Basketball', 'Dodgeball', 'Flag Football', 'Indoor Soccer', 'Soccer', 'Softball', 'Volleyball', 'Ultimate Frisbee', 'Water Polo'], _name='sport'), BR(),
+        INPUT(_type='submit')
+        )
+    if form.process().accepted:
+        session.search_sport = request.vars.sport
+        redirect(URL('team_search_result'))
+    return dict(form=form)
+
+#################### Team Search Result ####################
+@auth.requires_login()
+def team_search_result():
+    teams = db(db.teams.number_of_players < 5 and db.teams.sport == session.search_sport).select(db.teams.ALL)
+    users_teams = db(db.team_players.player == auth.user_id).select()
+    return dict(teams=teams, sport=session.search_sport, users_teams=users_teams)
+
+#################### Delete Team ####################
+def delete_team():
+    team = db.teams(request.args[0]) or redirect(URL('my_teams'))
+    form = SQLFORM.factory(Field('confirm_deletion', 'boolean', default=False))
+    if form.process().accepted:
+        if form.vars.confirm_deletion == True:
+            db(db.teams.id == request.args[0]).delete()
+            db.commit()
+            redirect(URL('my_teams'))
+        else:
+            redirect(URL('my_teams'))
+    return dict(form=form, team=team)
+
+
+
+#################### Debug User Info ####################
+def user_debug_information():
+    user = None
+    if (auth.is_logged_in()):
+        user = auth.user
+    return dict(user=user)
+
+
+#################### Validation for adding a new schedule ####################
+
+def schedule_validation(form):
+    team1 = form.vars.team_1
+    team2 = form.vars.team_2
+    winner = form.vars.winner
+    date = form.vars.date
+    if team1 == team2:
+        form.errors.team_2 = 'teams can not be the same'
+    if date == None:
+        form.errors.date = 'please select date'
+   # if winner!= team1 and winner != team2:
+    #    form.errors.winner = 'winner must be team1 or team2'
+
+#################### Sports Views ####################
+def basketball():
+    schedules = db().select(db.basketball.ALL, orderby=db.basketball.date)    
+    staff_is_logged_in = False;
+    if auth.user:
+        if auth.user.staff:
+            staff_is_logged_in = True;
+    return dict(message=T('Basketball'), staff=staff_is_logged_in, schedules=schedules)
+
+
+def dodgeball():
+    schedules = db().select(db.dodgeball.ALL, orderby=db.dodgeball.date)
+    staff_is_logged_in = False;
+    if auth.user:
+        if auth.user.staff:
+            staff_is_logged_in = True;
+    return dict(message=T('Dodgeball'), staff=staff_is_logged_in, schedules=schedules)
+
+
+def flag_football():
+    schedules = db().select(db.flag_football.ALL, orderby=db.flag_football.date)
+    staff_is_logged_in = False;
+    if auth.user:
+        if auth.user.staff:
+            staff_is_logged_in = True;
+    return dict(message=T('Flag Football'), staff=staff_is_logged_in, schedules=schedules)
+
+
+def indoor_soccer():
+    schedules = db().select(db.indoor_soccer.ALL, orderby=db.indoor_soccer.date)
+    staff_is_logged_in = False;
+    if auth.user:
+        if auth.user.staff:
+            staff_is_logged_in = True;
+    return dict(message=T('Indoor Soccer'), staff=staff_is_logged_in, schedules=schedules)
+
+
+def soccer():
+    schedules = db().select(db.soccer.ALL, orderby=db.soccer.date)
+    staff_is_logged_in = False;
+    if auth.user:
+        if auth.user.staff:
+            staff_is_logged_in = True;
+    return dict(message=T('Soccer'), staff=staff_is_logged_in, schedules=schedules)
+
+
+def softball():
+    schedules = db().select(db.softball.ALL, orderby=db.softball.date)
+    staff_is_logged_in = False;
+    if auth.user:
+        if auth.user.staff:
+            staff_is_logged_in = True;
+    return dict(message=T('Softball'), staff=staff_is_logged_in, schedules=schedules)
+
+
+def volleyball():
+    schedules = db().select(db.volleyball.ALL, orderby=db.volleyball.date)
+    staff_is_logged_in = False;
+    if auth.user:
+        if auth.user.staff:
+            staff_is_logged_in = True;
+    return dict(message=T('Volleyball'), staff=staff_is_logged_in, schedules=schedules)
+
+
+def ultimate_frisbee():
+    schedules = db().select(db.ultimate_frisbee.ALL, orderby=db.ultimate_frisbee.date)
+    staff_is_logged_in = False;
+    if auth.user:
+        if auth.user.staff:
+            staff_is_logged_in = True;
+    return dict(message=T('Ultimate Frisbee'), staff=staff_is_logged_in, schedules=schedules)
+
+
+def water_polo():
+    schedules = db().select(db.water_polo.ALL, orderby=db.water_polo.date)
+    staff_is_logged_in = False;
+    if auth.user:
+        if auth.user.staff:
+            staff_is_logged_in = True;
+    return dict(message=T('Water Polo'), staff=staff_is_logged_in, schedules=schedules)
+
+
+###################### Edit Game Pages ######################
+def basketball_edit():
+    this_schedule = db.basketball(request.args(0, cast=int)) or redirect(URL('basketball'))
+    form = crud.update(db.basketball, this_schedule, next=URL('basketball'))
+    return dict(form=form)
+
+def dodgeball_edit():
+    this_schedule = db.dodgeball(request.args(0, cast=int)) or redirect(URL('dodgeball'))
+    form = crud.update(db.dodgeball, this_schedule, next=URL('dodgeball'))
+    return dict(form=form)
+    
+def flag_football_edit():
+    this_schedule = db.flag_football(request.args(0, cast=int)) or redirect(URL('flag_football'))
+    form = crud.update(db.flag_football, this_schedule, next=URL('flag_football'))
+    return dict(form=form)
+    
+def indoor_soccer_edit():
+    this_schedule = db.indoor_soccer(request.args(0, cast=int)) or redirect(URL('indoor_soccer'))
+    form = crud.update(db.indoor_soccer, this_schedule, next=URL('indoor_soccer'))
+    return dict(form=form)
+    
+def soccer_edit():
+    this_schedule = db.soccer(request.args(0, cast=int)) or redirect(URL('soccer'))
+    form = crud.update(db.soccer, this_schedule, next=URL('soccer'))
+    return dict(form=form)
+    
+    
+def softball_edit():
+    this_schedule = db.softball(request.args(0, cast=int)) or redirect(URL('softball'))
+    form = crud.update(db.softball, this_schedule, next=URL('softball'))
+    return dict(form=form)
+    
+    
+def volleyball_edit():
+    this_schedule = db.volleyball(request.args(0, cast=int)) or redirect(URL('volleyball'))
+    form = crud.update(db.volleyball, this_schedule, next=URL('volleyball'))
+    return dict(form=form)
+    
+    
+def ultimate_frisbee_edit():
+    this_schedule = db.ultimate_frisbee(request.args(0, cast=int)) or redirect(URL('ultimate_frisbee'))
+    form = crud.update(db.ultimate_frisbee, this_schedule, next=URL('ultimate_frisbee'))
+    return dict(form=form)
+
+def water_polo_edit():
+    this_schedule = db.water_polo(request.args(0, cast=int)) or redirect(URL('water_polo'))
+    form = crud.update(db.water_polo, this_schedule, next=URL('water_polo'))
+    return dict(form=form)
+
+###################### Add Game Pages ######################
+def basketball_addgame():
+    #form = SQLFORM.factory(db.basketball)
+    form = SQLFORM.factory(
+                Field('date', 'datetime', widget=SQLFORM.widgets.datetime.widget, required=True),      
+                Field('team_1', requires=IS_IN_DB(db, db.basketball_sport, '%(team_name)s')),
+                Field('team_2', requires=IS_IN_DB(db, db.basketball_sport, '%(team_name)s')),
+                Field('winner', requires=IS_EMPTY_OR(IS_IN_DB(db, db.basketball_sport, '%(team_name)s'))),
+                Field('score', required=False),
+                )
+    if form.process(onvalidation=schedule_validation).accepted:
+        db.basketball.insert(date = form.vars.date,
+                             team_1 = form.vars.team_1,
+                             team_2 = form.vars.team_2,
+                             )
+        db.commit()
+        redirect(URL('basketball'))
+    return dict(form=form);
+
+def dodgeball_addgame():
+    form = SQLFORM.factory(
+                Field('date', 'datetime', widget=SQLFORM.widgets.datetime.widget, required=True),      
+                Field('team_1', requires=IS_IN_DB(db, db.dodgeball_sport, '%(team_name)s')),
+                Field('team_2', requires=IS_IN_DB(db, db.dodgeball_sport, '%(team_name)s')),
+                Field('winner', requires=IS_EMPTY_OR(IS_IN_DB(db, db.dodgeball_sport, '%(team_name)s'))),
+                Field('score', required=False),
+                )
+    if form.process(onvalidation=schedule_validation).accepted:
+        db.dodgeball.insert(date = form.vars.date,
+                             team_1 = form.vars.team_1,
+                             team_2 = form.vars.team_2,
+                             )
+        db.commit()
+        redirect(URL('dodgeball'))
+    return dict(form=form);
+
+def flag_football_addgame():
+    form = SQLFORM.factory(
+                Field('date', 'datetime', widget=SQLFORM.widgets.datetime.widget, required=True),      
+                Field('team_1', requires=IS_IN_DB(db, db.flag_football_sport, '%(team_name)s')),
+                Field('team_2', requires=IS_IN_DB(db, db.flag_football_sport, '%(team_name)s')),
+                Field('winner', requires=IS_EMPTY_OR(IS_IN_DB(db, db.flag_football_sport, '%(team_name)s'))),
+                Field('score', required=False),
+                )
+    if form.process(onvalidation=schedule_validation).accepted:
+        db.flag_football.insert(date = form.vars.date,
+                             team_1 = form.vars.team_1,
+                             team_2 = form.vars.team_2,
+                             )
+        db.commit()
+        redirect(URL('flag_football'))
+    return dict(form=form);
+    
+def indoor_soccer_addgame():
+    form = SQLFORM.factory(
+                Field('date', 'datetime', widget=SQLFORM.widgets.datetime.widget, required=True),      
+                Field('team_1', requires=IS_IN_DB(db, db.indoor_soccer_sport, '%(team_name)s')),
+                Field('team_2', requires=IS_IN_DB(db, db.indoor_soccer_sport, '%(team_name)s')),
+                Field('winner', requires=IS_EMPTY_OR(IS_IN_DB(db, db.indoor_soccer_sport, '%(team_name)s'))),
+                Field('score', required=False),
+                )
+    if form.process(onvalidation=schedule_validation).accepted:
+        db.indoor_soccer.insert(date = form.vars.date,
+                             team_1 = form.vars.team_1,
+                             team_2 = form.vars.team_2,
+                             )
+        db.commit()
+        redirect(URL('indoor_soccer'))
+    return dict(form=form);
+    
+def soccer_addgame():
+    form = SQLFORM.factory(
+                Field('date', 'datetime', widget=SQLFORM.widgets.datetime.widget, required=True),      
+                Field('team_1', requires=IS_IN_DB(db, db.soccer_sport, '%(team_name)s')),
+                Field('team_2', requires=IS_IN_DB(db, db.soccer_sport, '%(team_name)s')),
+                Field('winner', requires=IS_EMPTY_OR(IS_IN_DB(db, db.soccer_sport, '%(team_name)s'))),
+                Field('score', required=False),
+                )
+    if form.process(onvalidation=schedule_validation).accepted:
+        db.soccer.insert(date = form.vars.date,
+                             team_1 = form.vars.team_1,
+                             team_2 = form.vars.team_2,
+                             )
+        db.commit()
+        redirect(URL('soccer'))
+    return dict(form=form);
+    
+def softball_addgame():
+    form = SQLFORM.factory(
+                Field('date', 'datetime', widget=SQLFORM.widgets.datetime.widget, required=True),      
+                Field('team_1', requires=IS_IN_DB(db, db.softball_sport, '%(team_name)s')),
+                Field('team_2', requires=IS_IN_DB(db, db.softball_sport, '%(team_name)s')),
+                Field('winner', requires=IS_EMPTY_OR(IS_IN_DB(db, db.softball_sport, '%(team_name)s'))),
+                Field('score', required=False),
+                )
+    if form.process(onvalidation=schedule_validation).accepted:
+        db.softball.insert(date = form.vars.date,
+                             team_1 = form.vars.team_1,
+                             team_2 = form.vars.team_2,
+                             )
+        db.commit()
+        redirect(URL('softball'))
+    return dict(form=form);
+                
+def volleyball_addgame():
+    form = SQLFORM.factory(
+                Field('date', 'datetime', widget=SQLFORM.widgets.datetime.widget, required=True),      
+                Field('team_1', requires=IS_IN_DB(db, db.volleyball_sport, '%(team_name)s')),
+                Field('team_2', requires=IS_IN_DB(db, db.volleyball_sport, '%(team_name)s')),
+                Field('winner', requires=IS_EMPTY_OR(IS_IN_DB(db, db.volleyball_sport, '%(team_name)s'))),
+                Field('score', required=False),
+                )
+    if form.process(onvalidation=schedule_validation).accepted:
+        db.volleyball.insert(date = form.vars.date,
+                             team_1 = form.vars.team_1,
+                             team_2 = form.vars.team_2,
+                             )
+        db.commit()
+        redirect(URL('volleyball'))
+    return dict(form=form);
+                
+def ultimate_frisbee_addgame():
+    form = SQLFORM.factory(
+                Field('date', 'datetime', widget=SQLFORM.widgets.datetime.widget, required=True),      
+                Field('team_1', requires=IS_IN_DB(db, db.ultimate_frisbee_sport, '%(team_name)s')),
+                Field('team_2', requires=IS_IN_DB(db, db.ultimate_frisbee_sport, '%(team_name)s')),
+                Field('winner', requires=IS_EMPTY_OR(IS_IN_DB(db, db.ultimate_frisbee_sport, '%(team_name)s'))),
+                Field('score', required=False),
+                )
+    if form.process(onvalidation=schedule_validation).accepted:
+        db.ultimate_frisbee.insert(date = form.vars.date,
+                             team_1 = form.vars.team_1,
+                             team_2 = form.vars.team_2,
+                             )
+        db.commit()
+        redirect(URL('ultimate_frisbee'))
+    return dict(form=form);
+                
+def water_polo_addgame():
+    form = SQLFORM.factory(
+                Field('date', 'datetime', widget=SQLFORM.widgets.datetime.widget, required=True),      
+                Field('team_1', requires=IS_IN_DB(db, db.water_polo_sport, '%(team_name)s')),
+                Field('team_2', requires=IS_IN_DB(db, db.water_polo_sport, '%(team_name)s')),
+                Field('winner', requires=IS_EMPTY_OR(IS_IN_DB(db, db.water_polo_sport, '%(team_name)s'))),
+                Field('score', required=False),
+                )
+    if form.process(onvalidation=schedule_validation).accepted:
+        db.water_polo.insert(date = form.vars.date,
+                             team_1 = form.vars.team_1,
+                             team_2 = form.vars.team_2,
+                             )
+        db.commit()
+        redirect(URL('water_polo'))
+    return dict(form=form);   
+
+@auth.requires_login()
+def delete_profile():
+    deleteform = SQLFORM.factory(Field('confirm_deletion', 'boolean', default=False))
+    if deleteform.process().accepted:
+        if deleteform.vars.confirm_deletion == True:
+            auth.del_group(auth.id_group(auth.user.id))
+            db(db.auth_user.id).delete()
+            db.commit()
+            auth.logout()
+        else:
+            redirect(URL('index'))
+    return dict(user=auth.user, deleteform=deleteform)

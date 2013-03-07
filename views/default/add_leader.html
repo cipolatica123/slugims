@@ -1,0 +1,13 @@
+{{extend 'layout.html'}}
+
+{{if team != None:}}
+<h3>{{=team.name}}</h3>
+
+{{if team.image!="":}}
+<img width="200px" src="{{=URL('download', args=team.image)}}" /><br /><br />
+{{pass}}
+
+<b>Add Team Leader:</b><br />
+{{=form}}
+<br /><br />
+{{pass}}

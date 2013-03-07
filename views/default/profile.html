@@ -1,0 +1,55 @@
+{{extend 'layout.html'}}
+
+<div style="float:left; width:50%;">    
+<h3>{{=player.first_name}} {{=player.last_name}}</h3>
+{{if not flag:}}
+    {{=A('Edit Profile', _href=URL('user/profile'))}}<br />
+{{pass}}
+
+{{if player.image:}}
+   	<img width="200px" height="200px" src="{{=URL('download', args=player.image)}}" />
+{{else:}}
+   	{{=IMG(_src=URL('static','images/' + player.sex.lower() + '.png'), _width='200px', _height='200px')}}
+{{pass}}
+<b>Year: </b>{{=player.year}}<br />
+<br />
+<b>Sport: </b>{{=player.sport}}<br />
+<br />
+</div>
+
+
+<div style="float:right; width:50%; margin-top:20px;">
+{{if (leader_invites or team_invites) and (not flag):}}
+    <h4>Pending Requests</h4>
+    {{for leader_invite in leader_invites:}}
+    	{{if leader_invite.pending:}}
+    		You have been invited by {{=B(leader_invite.sender.first_name)}} {{=B(leader_invite.sender.last_name)}}<br />
+    		to be the team leader for the {{=B(leader_invite.team.name)}}.<br />
+    		<br />
+    		{{=A('Accept', _href=URL('accept', args=['tli', 'profile', leader_invite.id]))}} 
+    		{{=A('Decline', _href=URL('decline', args=['tli', 'profile', leader_invite.id]))}}<br /><br />
+    	{{pass}}
+    {{pass}}
+    
+    {{for team_invite in team_invites:}}
+    	{{if team_invite.pending:}}
+    		{{if team_invite.sender.image:}}
+   				{{=A(IMG(_src=URL('download', args=team_invite.sender.image), _width='80px', _height='80px'),
+   					 _href=URL('team', args=[team_invite.sender.id]))}}   				
+			{{else:}}
+   				{{=IMG(_src=URL('static','images/' + team_invite.sender.sport.replace(' ','') + '.png'), _width='80px', _height='80px')}}
+			{{pass}}
+    		You have been invited by {{=B(team_invite.sender.name)}}<br />
+    		to be a team member. <br />
+    		<br />
+    		{{=A('Accept', _href=URL('accept', args=['tip', 'profile', team_invite.id]))}}
+    		{{=A('Decline', _href=URL('decline', args=['tip', 'profile', team_invite.id]))}}<br /><br />
+    	{{pass}}
+    {{pass}}
+{{pass}}
+{{if flag:}}
+    {{=H3(A('Invite Player', _href=URL('invite_player', args=[player.id, team_id])))}}
+{{pass}}
+    
+
+</div>
